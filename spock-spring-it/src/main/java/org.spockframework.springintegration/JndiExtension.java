@@ -1,6 +1,9 @@
 package org.spockframework.springintegration;
 
 import com.atomikos.icatch.jta.UserTransactionManager;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.command.ActiveMQTopic;
 import org.spockframework.runtime.extension.IGlobalExtension;
 import org.spockframework.runtime.model.SpecInfo;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -54,11 +57,29 @@ public class JndiExtension implements IGlobalExtension {
 			buildMailSessions(builder, jndi.mailSessions());
 			buildTransactionManagers(builder, jndi.transactionManager());
 			buildBeans(builder, jndi.beans());
+			buildJms(builder, jndi.jms());
 
 			buildCustom(builder, jndi.builder());
 
 		} catch (NamingException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private void buildJms(NamingContextBuilder builder, Jms[] jmses) {
+		for (Jms jms : jmses) {
+			ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory("vm://localhost");
+			builder.bind(jms.connectionFactoryName(), factory);
+			for (Queue queue : jms.queues()) {
+				ActiveMQQueue q = new ActiveMQQueue();
+				q.setPhysicalName("queue" + queue.hashCode());
+				builder.bind(queue.name(), q);
+			}
+			for (Topic topic : jms.topics()) {
+				ActiveMQTopic t = new ActiveMQTopic();
+				t.setPhysicalName("topic" + topic.hashCode());
+				builder.bind(topic.name(), t);
+			}
 		}
 	}
 

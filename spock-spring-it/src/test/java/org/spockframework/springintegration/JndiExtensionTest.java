@@ -3,6 +3,8 @@ package org.spockframework.springintegration;
 import org.junit.Test;
 import org.spockframework.runtime.model.SpecInfo;
 
+import javax.jms.*;
+import javax.jms.Queue;
 import javax.mail.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -62,6 +64,17 @@ public class JndiExtensionTest {
 		setupWith(JndiAnnotated.class);
 		String s = lookup("java:comp/env/strings/jan", String.class);
 		assertThat(s, is("Jan"));
+	}
+
+	@Test
+	public void jms() throws NamingException {
+		setupWith(JndiAnnotated.class);
+		ConnectionFactory connectionFactory = lookup("java:comp/env/jms/connectionFactory", ConnectionFactory.class);
+		assertThat(connectionFactory, notNullValue());
+		assertThat(lookup("java:comp/env/jms/qa", javax.jms.Queue.class), notNullValue());
+		assertThat(lookup("java:comp/env/jms/qb", javax.jms.Queue.class), notNullValue());
+		assertThat(lookup("java:comp/env/jms/ta", javax.jms.Topic.class), notNullValue());
+		assertThat(lookup("java:comp/env/jms/tb", javax.jms.Topic.class), notNullValue());
 	}
 	
 	@Test

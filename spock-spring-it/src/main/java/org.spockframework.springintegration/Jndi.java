@@ -55,6 +55,13 @@ public @interface Jndi {
 	TransactionManager[] transactionManager() default {};
 
 	/**
+	 * Configure the JMS environment; configure the queues, topics and connection factory.
+	 *
+	 * @return the JMS environment
+	 */
+	Jms[] jms() default {};
+
+	/**
 	 * If you require some complex environment setup, you can set this value. The type you specify here
 	 * must be an implementation of the {@link JndiBuilder} with nullary constructor.
 	 *

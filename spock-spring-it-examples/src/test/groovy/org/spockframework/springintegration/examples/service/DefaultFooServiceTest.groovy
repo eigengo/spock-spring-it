@@ -4,16 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
- /**
+/**
  * @author janm
  */
 @IntegrationTest
 @ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
-class FooServiceTest extends Specification {
+class DefaultFooServiceTest extends Specification {
 	@Autowired
 	FooService service
 
-	def y() {
+	def "calling x will return the param's length"() {
 		expect:
 		result == this.service.x(param)
 

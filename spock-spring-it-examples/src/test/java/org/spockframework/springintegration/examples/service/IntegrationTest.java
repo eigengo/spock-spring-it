@@ -17,7 +17,11 @@ import java.lang.annotation.RetentionPolicy;
 				driverClass = JDBCDriver.class, url = "jdbc:hsqldb:mem:test"),
 		mailSessions = @MailSession(name = "java:comp/env/mail/foo"),
 		transactionManager = @TransactionManager(name = "java:comp/TransactionManager"),
-		beans = @Bean(name = "java:comp/env/bean/hibernateProperties", type = HibernateProperties.class)
+		beans = @Bean(name = "java:comp/env/bean/hibernateProperties", type = HibernateProperties.class),
+		jms = @Jms(
+				connectionFactoryName = "java:comp/env/jms/connectionFactory",
+				queues = @Queue(name = "java:comp/env/jms/queue")
+		)
 )
 @Transactional
 @TransactionConfiguration(defaultRollback = true)

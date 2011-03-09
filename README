@@ -43,7 +43,7 @@ To get this running, we give the META-INF/spring/module-context.xml configuratio
 
 	*<jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/test" expected-type="javax.sql.DataSource"/>*
 	*<jee:jndi-lookup id="hibernateProperties" jndi-name="java:comp/env/bean/hibernateProperties"
-					 expected-type="org.spockframework.springintegration.examples.domain.HibernateProperties"/>*
+					 expected-type="...HibernateProperties"/>*
 	*<tx:jta-transaction-manager />*
 	<tx:annotation-driven />
 

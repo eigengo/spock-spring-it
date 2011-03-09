@@ -1,6 +1,6 @@
 Spock Extension to simplify integration testing with Spring.
 
-Most Spring enterprise applications use dome DataSources, TransactionManagers and other JEE beasts. Now, we would
+Most Spring enterprise applications use some DataSources, TransactionManagers and other JEE beasts. Now, we would
 like to use Spock to perform the necessary integration testing, but we don't really want to create separate
 application context files for the tests.
 
@@ -64,8 +64,8 @@ To get this running, we give the META-INF/spring/module-context.xml configuratio
 
 </beans>
 
-This context file is the same for both tests and for production. The "variable" items (DataSource, TransactionManager and
-our custom HibernateProperties) bean are looked up from JNDI.
+This context file is the same for both tests and for production. The "variable" items (DataSource, TransactionManager
+and our custom HibernateProperties) beans are looked up from JNDI.
 
 To the test, then. We have simply
 

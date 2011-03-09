@@ -88,6 +88,27 @@ class FooServiceTest extends Specification {
 
 }
 
+If I wanted to have another integration test (perhaps testing another class), I would write:
+
+@IntegrationTest
+@ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
+class SomeOtherServiceTest extends Specification {
+	@Autowired
+	SomeOtherService service
+
+	def "testing service operation"() {
+		expect:
+		count = this.service.work(filter)
+
+		where:
+		filter	| 	count
+		"Jan"	|	2
+		"Ani"	|	1
+		"Joe"	|	0
+	}
+
+}
+
 The interesting part is the @IntegrationTest annotation. It is defined as
 
 @Jndi(
@@ -102,6 +123,10 @@ The interesting part is the @IntegrationTest annotation. It is defined as
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IntegrationTest {
 }
+
+The reason why I have defined the @IntegrationTest annotation is because I want to use it on the two test classes:
+the FooServiceTest and SomeOtherServiceTest. Naturally, I could have used the @Jndi annotation on the test classes,
+but that would bring [too much] duplication.
 
 The Spock extension understands the @Jndi annotation and its elements; it prepares the environment for the test
 and then executes the test in the usual Spock way.

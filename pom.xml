@@ -133,6 +133,15 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>jboss</id>
+			<url>http://repository.jboss.org/maven2</url>
+		</repository>
+		<repository>
+	            <id>JBoss Repo</id>
+	            <url>https://repository.jboss.org/nexus/content/repositories/releases</url>
+	            <name>JBoss Repo</name>
+	        </repository>
 	</repositories>
 
 	<!-- Only required if a snapshot version of Spock's Maven plugin is used -->

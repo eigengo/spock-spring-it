@@ -1,0 +1,114 @@
+Spock Extension to simplify integration testing with Spring.
+
+Most Spring enterprise applications use dome DataSources, TransactionManagers and other JEE beasts. Now, we would
+like to use Spock to perform the necessary integration testing, but we don't really want to create separate
+application context files for the tests.
+
+Instead, we would like to set up the JNDI environment for the test code and use the same application context files
+for both testing and production. This is where this project helps: the annotations on our test classes specify
+the JNDI environment we wish to build for the test.
+
+Verba docent, exempla trahunt, so I'll start you off with a simple sample. Let there be:
+
+public interface FooService {
+	int x(String query);
+}
+
+@Service
+@Transactional
+public class DefaultFooService implements FooService {
+	private HibernateTemplate hibernateTemplate;
+
+	@Autowired
+	public DefaultFooService(HibernateTemplate hibernateTemplate) {
+		this.hibernateTemplate = hibernateTemplate;
+	}
+
+	public int x(String query) {
+		Document d = new Document();
+		d.setTitle("x");
+
+		this.hibernateTemplate.saveOrUpdate(d);
+
+		return query.length();
+	}
+}
+
+To get this running, we give the META-INF/spring/module-context.xml configuration file:
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:jee="http://www.springframework.org/schema/jee"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<context:component-scan base-package="org.spockframework.springintegration"/>
+
+	<jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/test" expected-type="javax.sql.DataSource"/>
+	<jee:jndi-lookup id="hibernateProperties" jndi-name="java:comp/env/bean/hibernateProperties"
+					 expected-type="org.spockframework.springintegration.examples.domain.HibernateProperties"/>
+	<tx:jta-transaction-manager />
+	<tx:annotation-driven />
+
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="packagesToScan">
+			<list>
+				<value>org.spockframework.springintegration</value>
+			</list>
+		</property>
+		<property name="hibernateProperties" value="#{hibernateProperties.asProperties()}"/>
+	</bean>
+
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+
+
+</beans>
+
+This context file is the same for both tests and for production. The "variable" items (DataSource, TransactionManager and
+our custom HibernateProperties) bean are looked up from JNDI.
+
+To the test, then. We have simply
+
+@IntegrationTest
+@ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
+class FooServiceTest extends Specification {
+	@Autowired
+	FooService service
+
+	def y() {
+		expect:
+		result == this.service.x(param)
+
+		where:
+		param	| 	result
+		"one"	|	3
+		"two"	|	3
+		"four"	|	4
+	}
+
+}
+
+The interesting part is the @IntegrationTest annotation. It is defined as
+
+@Jndi(
+		dataSources = @DataSource(name = "java:comp/env/jdbc/test",
+				driverClassName = "org.hsqldb.jdbcDriver", url = "jdbc:hsqldb:mem:test"),
+		mailSessions = @MailSession(name = "java:comp/env/mail/foo"),
+		transactionManager = @TransactionManager(name = "java:comp/TransactionManager"),
+		beans = @Bean(name = "java:comp/env/bean/hibernateProperties", type = HibernateProperties.class)
+)
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface IntegrationTest {
+}
+
+The Spock extension understands the @Jndi annotation and its elements; it prepares the environment for the test
+and then executes the test in the usual Spock way.

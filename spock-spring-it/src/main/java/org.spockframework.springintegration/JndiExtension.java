@@ -22,6 +22,23 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
+ * Spock extension that processes the {@link Jndi} annotation and sets up the JNDI environment according to the
+ * values in the annotation. You can use the extension on its own, though typically, you'd combine it with the
+ * spock-spring extension. This will allow you to write Spock code that looks like this:
+ * <code><pre>
+ *	&#64;Jndi(
+ *		dataSources = &#64;DataSource(...)
+ *	)
+ *	&#64;ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
+ *	class FooServiceTest extends Specification {
+ *		&#64;Autowired
+ *	 	FooService service
+ *
+ *	 	def "some test"() {
+ *	 	}
+ *	 }
+ * </pre></code>
+ *
  * @author janm
  */
 public class JndiExtension implements IGlobalExtension {

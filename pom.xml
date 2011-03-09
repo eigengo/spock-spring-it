@@ -1,0 +1,118 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.spockframework</groupId>
+	<artifactId>spock-spring-it-parent</artifactId>
+	<version>0.5-groovy-1.7</version>
+	<packaging>pom</packaging>
+	<name>Spock Framework - Spring Integration Test Support</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<spring.version>3.0.5.RELEASE</spring.version>
+	</properties>
+
+	<modules>
+		<module>spock-spring-it</module>
+		<module>spock-spring-it-examples</module>
+	</modules>
+
+	<build>
+		<!-- Mandatory plugins for using Spock -->
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.gmaven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<version>1.3</version>
+				<configuration>
+					<providerSelection>1.7</providerSelection>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>testCompile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.codehaus.gmaven.runtime</groupId>
+						<artifactId>gmaven-runtime-1.7</artifactId>
+						<version>1.3</version>
+						<exclusions>
+							<exclusion>
+								<groupId>org.codehaus.groovy</groupId>
+								<artifactId>groovy-all</artifactId>
+							</exclusion>
+						</exclusions>
+					</dependency>
+					<dependency>
+						<groupId>org.codehaus.groovy</groupId>
+						<artifactId>groovy-all</artifactId>
+						<version>1.7.5</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<!-- Optional plugins for using Spock -->
+			<plugin>
+				<!--
+						  Finds all Spock specifications in this project, and configures Maven to run them
+						  If this plugin is removed, Spock specifications will need to adhere to Maven's naming conventions for test classes
+						-->
+				<groupId>org.spockframework</groupId>
+				<artifactId>spock-maven</artifactId>
+				<version>${project.version}</version>
+				<!-- you need to specify a concrete version number here -->
+				<executions>
+					<execution>
+						<goals>
+							<goal>find-specs</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Only required if default Surefire configuration is not satisfactory -->
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<useFile>false</useFile>
+				</configuration>
+			</plugin>
+			<!-- Only required for spock-example build -->
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<!-- Only required if a snapshot version of Spock is used -->
+	<repositories>
+		<repository>
+			<id>spock-snapshots</id>
+			<url>http://m2repo.spockframework.org/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<!-- Only required if a snapshot version of Spock's Maven plugin is used -->
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spock-snapshots</id>
+			<url>http://m2repo.spockframework.org/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+</project>

@@ -1,4 +1,4 @@
-package org.spockframework.springintegration
+package org.spockframework.springintegration.examples.service
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
@@ -9,7 +9,7 @@ import spock.lang.Specification
  */
 @IntegrationTest
 @ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
-class Expect2 extends Specification {
+class FooServiceTest extends Specification {
 	@Autowired
 	FooService service
 

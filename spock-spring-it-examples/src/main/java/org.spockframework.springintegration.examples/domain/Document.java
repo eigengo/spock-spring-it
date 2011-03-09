@@ -1,4 +1,4 @@
-package org.spockframework.springintegration;
+package org.spockframework.springintegration.examples.domain;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

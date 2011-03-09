@@ -1,4 +1,6 @@
-package org.spockframework.springintegration;
+package org.spockframework.springintegration.examples.service;
+
+import org.spockframework.springintegration.examples.domain.Document;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

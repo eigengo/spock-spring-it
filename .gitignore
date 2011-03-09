@@ -1,4 +1,6 @@
 *.tm
+tm.out
+*.log
 *.epoch
 */target
 */*.iml

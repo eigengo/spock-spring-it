@@ -1,5 +1,6 @@
-package org.spockframework.springintegration;
+package org.spockframework.springintegration.examples.service;
 
+import org.spockframework.springintegration.examples.domain.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Service;

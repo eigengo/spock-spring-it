@@ -1,4 +1,4 @@
-package org.spockframework.springintegration;
+package org.spockframework.springintegration.examples.service;
 
 /**
  * @author janm

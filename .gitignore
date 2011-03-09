@@ -2,6 +2,7 @@
 tm.out
 *.log
 *.epoch
+activemq-data
 */target
 */*.iml
 *.iml

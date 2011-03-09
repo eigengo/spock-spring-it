@@ -91,6 +91,36 @@
 					<skip>true</skip>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<classesDirectory>target/classes</classesDirectory>
+					<includes>
+						<include>**/*Test.class</include>
+					</includes>
+					<testFailureIgnore>true</testFailureIgnore>
+					<argLine>-Xmx1024M -XX:MaxPermSize=256m</argLine>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							src/assemble/sql-scripts.xml
+						</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

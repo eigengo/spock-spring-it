@@ -3,6 +3,7 @@ package org.spockframework.springintegration;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.sql.Driver;
 
 /**
  * Specifies the {@link javax.activation.DataSource} to be added to the JNDI environment
@@ -21,11 +22,11 @@ public @interface DataSource {
 	String name();
 
 	/**
-	 * Specifies the class name of the driver
+	 * Specifies the type of the JDBC driver
 	 *
-	 * @return the class name of the driver
+	 * @return the driver class
 	 */
-	String driverClassName();
+	Class<? extends Driver> driverClass();
 
 	/**
 	 * The JDBC URL

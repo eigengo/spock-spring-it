@@ -111,7 +111,7 @@ public class JndiExtension implements IGlobalExtension {
 	private void buildDataSources(NamingContextBuilder builder, DataSource[] dataSources) {
 		for (DataSource dataSource : dataSources) {
 			DriverManagerDataSource ds = new DriverManagerDataSource();
-			ds.setDriverClassName(dataSource.driverClassName());
+			ds.setDriverClassName(dataSource.driverClass().getName());
 			ds.setUrl(dataSource.url());
 			ds.setUsername(dataSource.username());
 			ds.setPassword(dataSource.password());

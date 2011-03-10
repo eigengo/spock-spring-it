@@ -19,24 +19,27 @@ class UserControllerTest extends WebSpecification {
 
 		when:
 		post("/users.html", [username:username, fullName:fullName])
-		//def wp = get("/users/1.html")
-		//post(wp)
 
 		then:
 		def user = this.hibernateTemplate.find("from User where username=?", username)[0]
 		user.fullName == fullName
 	}
 
-	def "posting a user missing fullName"() {
+	def "posting with validation"() {
 		given:
+		def username = "janm"
+		def fullName = "Jan Machace"
 
 		when:
 		def wp = post("/users.html", [username:"x", fullName:""])
+		post("/users.html", [username:username, fullName:fullName])
 
 		then:
-		//wp.hasErrors
-		//wp.hasErrorFor("fullName")
-		true
+		wp.hasFieldErrorFor("fullName")
+		wp.hasFieldErrorFor("username")
+
+		def user = this.hibernateTemplate.find("from User where username=?", username)[0]
+		user.fullName == fullName
 	}
 
 }

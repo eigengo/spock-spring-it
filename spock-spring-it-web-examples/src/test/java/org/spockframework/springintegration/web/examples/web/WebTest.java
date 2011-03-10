@@ -7,6 +7,8 @@ import org.spockframework.springintegration.Jndi;
 import org.spockframework.springintegration.web.WebContextConfiguration;
 import org.spockframework.springintegration.web.examples.domain.HibernateProperties;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -19,6 +21,8 @@ import java.lang.annotation.RetentionPolicy;
 	servletContextConfiguration = "/WEB-INF/sw-servlet.xml",
 	contextConfiguration = @ContextConfiguration("classpath*:/META-INF/spring/module-context.xml")
 )
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
 @Jndi(
 		dataSources = @DataSource(name = "java:comp/env/jdbc/test",
 				driverClass = JDBCDriver.class, url = "jdbc:hsqldb:mem:test"),

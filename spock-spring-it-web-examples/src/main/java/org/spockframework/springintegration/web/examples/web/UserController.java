@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.validation.Valid;
+
 /**
  * @author janm
  */
@@ -30,7 +32,7 @@ public class UserController {
 	}
 
 	@RequestMapping(value = "/users", method = RequestMethod.POST)
-	public String save(@ModelAttribute User user, BindingResult bindingResult) {
+	public String save(@Valid @ModelAttribute User user, BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			return "user/edit";
 		}

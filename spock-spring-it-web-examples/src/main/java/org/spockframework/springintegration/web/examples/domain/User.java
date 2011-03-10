@@ -3,6 +3,7 @@ package org.spockframework.springintegration.web.examples.domain;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.Size;
 
 /**
  * @author janm
@@ -12,7 +13,9 @@ public class User {
 	@Id
 	@GeneratedValue
 	private Long id;
+	@Size(min = 3)
 	private String username;
+	@Size(min = 1)
 	private String fullName;
 
 	public Long getId() {

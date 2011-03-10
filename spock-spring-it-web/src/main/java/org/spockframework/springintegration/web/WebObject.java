@@ -1,6 +1,8 @@
 package org.spockframework.springintegration.web;
 
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.BindingResultUtils;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +21,22 @@ public class WebObject {
 		this.content = response.getContentAsByteArray();
 	}
 
+	private BindingResult getRequiredBindingResultFor(String name) {
+		return BindingResultUtils.getRequiredBindingResult(this.model, name);
+	}
+
+	private BindingResult getRequiredSingleBindingResult() {
+		BindingResult result = null;
+		for (Map.Entry<String, Object> e : this.model.entrySet()) {
+			if (e.getValue() instanceof BindingResult) {
+				if (result != null) throw new RuntimeException("More than one BindingResult found.");
+				result = (BindingResult) e.getValue();
+			}
+		}
+		if (result == null) throw new RuntimeException("No BindingResult found.");
+		return result;
+	}
+
 	public String html() {
 		return new String(this.content);
 	}
@@ -32,5 +50,9 @@ public class WebObject {
 		if (o == null) return null;
 		if (o.getClass().isAssignableFrom(type)) throw new RuntimeException("");
 		return (T)o;
+	}
+
+	public boolean hasFieldErrorFor(String path) {
+		return getRequiredSingleBindingResult().hasFieldErrors(path);
 	}
 }

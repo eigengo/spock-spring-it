@@ -17,7 +17,7 @@ class WebSpecification extends Specification {
 		try {
 			DispatcherServletHolder.get().service(request, response)
 		} catch (Exception e) {
-
+			throw new RuntimeException(e);
 		}
 
 		return new WebObject(request, response)
@@ -30,7 +30,7 @@ class WebSpecification extends Specification {
 		try {
 			DispatcherServletHolder.get().service(request, response)
 		} catch (Exception e) {
-
+			throw new RuntimeException(e);
 		}
 
 		return new WebObject(request, response)

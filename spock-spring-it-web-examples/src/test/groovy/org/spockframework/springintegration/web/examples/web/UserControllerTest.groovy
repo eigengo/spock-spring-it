@@ -31,13 +31,17 @@ class UserControllerTest extends WebSpecification {
 		def fullName = "Jan Machace"
 
 		when:
+		// send invalid form
 		def wp = post("/users.html", [username:"x", fullName:""])
+		// correct the errors, submit again
 		post("/users.html", [username:username, fullName:fullName])
 
 		then:
+		// the result of the first post should have validation errors
 		wp.hasFieldErrorFor("fullName")
 		wp.hasFieldErrorFor("username")
 
+		// because of the second valid post, we should now have the user in the DB
 		def user = this.hibernateTemplate.find("from User where username=?", username)[0]
 		user.fullName == fullName
 	}

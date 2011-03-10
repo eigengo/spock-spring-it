@@ -1,6 +1,8 @@
 package org.spockframework.springintegration.web;
 
+import org.spockframework.runtime.AbstractRunListener;
 import org.spockframework.runtime.extension.IGlobalExtension;
+import org.spockframework.runtime.model.ErrorInfo;
 import org.spockframework.runtime.model.SpecInfo;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.web.MockServletConfig;
@@ -46,9 +48,8 @@ public class SpringWebExtension implements IGlobalExtension {
 			throw new WebTestContextCreationException(e);
 		}
 
-		/*
-		SpringTestContextManager manager = new SpringTestContextManager(spec.getReflection());
-		final SpringInterceptor interceptor = new SpringInterceptor(manager);
+		SpringWebTestContextManager manager = new SpringWebTestContextManager(spec.getReflection());
+		final SpringWebInterceptor interceptor = new SpringWebInterceptor(manager);
 
 		spec.addListener(new AbstractRunListener() {
 		  public void error(ErrorInfo error) {
@@ -61,7 +62,6 @@ public class SpringWebExtension implements IGlobalExtension {
 		topSpec.getSetupMethod().addInterceptor(interceptor);
 		topSpec.getCleanupMethod().addInterceptor(interceptor);
 		topSpec.getCleanupSpecMethod().addInterceptor(interceptor);
-		*/
 	}
 
 	private File findWebSource(File root, String... path) {

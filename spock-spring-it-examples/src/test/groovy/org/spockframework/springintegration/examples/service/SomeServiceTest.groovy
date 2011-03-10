@@ -18,18 +18,4 @@ class SomeServiceTest extends Specification {
 		this.someService.idolFind().empty
 	}
 
-	/*
-	def "index"() {
-		given:
-		def message = this.hibernateTemplate.get(Message.class, 1L)
-
-		when:
-		form = get("/message/1.html")
-		response = post(form)
-
-		then:
-		this.hibernateTemplate.get(Message.class, 1L).equals(message)
-	}
-	*/
-
 }

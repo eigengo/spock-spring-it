@@ -18,6 +18,7 @@
 	<modules>
 		<module>spock-spring-it</module>
 		<module>spock-spring-it-examples</module>
+		<module>spock-spring-it-web</module>
 	</modules>
 
 	<build>

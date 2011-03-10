@@ -7,6 +7,7 @@ import org.spockframework.runtime.model.SpecInfo;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -21,6 +22,12 @@ public class SpringWebExtension implements IGlobalExtension {
 	public void visitSpec(SpecInfo spec) {
 		final WebContextConfiguration webContextConfiguration = AnnotationUtils.findAnnotation(spec.getReflection(), WebContextConfiguration.class);
 		if (webContextConfiguration == null) return;
+		ContextConfiguration contextConfiguration = AnnotationUtils.findAnnotation(spec.getReflection(), ContextConfiguration.class);
+		if (contextConfiguration.loader() != ExistingApplicationContextLoader.class ||
+				contextConfiguration.value().length > 0 ||
+				contextConfiguration.locations().length > 0) {
+			throw new WebTestContextCreationException("Do not annotate your web test cases with @ContextConfiguration. Extend WebSpecification instead.");
+		}
 
 		final File root = new File(".");
 		File webXml = findWebSource(root, "src", "main", "webapp", "WEB-INF", "web.xml");

@@ -4,7 +4,7 @@ import org.spockframework.springintegration.web.WebSpecification
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.orm.hibernate3.HibernateTemplate
 
-/**
+ /**
  * @author janm
  */
 @WebTest

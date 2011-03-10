@@ -1,4 +1,5 @@
 *.tm
+out
 tm.out
 *.log
 *.epoch

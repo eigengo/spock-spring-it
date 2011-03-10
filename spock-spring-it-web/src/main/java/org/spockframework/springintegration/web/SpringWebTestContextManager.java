@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 /**
  * @author janm
  */
-public class SpringWebTestContextManager {
+class SpringWebTestContextManager {
 	private static final Method beforeTestClassMethod =
 			ReflectionUtil.getMethodBySignature(TestContextManager.class, "beforeTestClass");
 	private static final Method afterTestClassMethod =

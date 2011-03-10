@@ -7,7 +7,7 @@ import org.spockframework.runtime.model.ErrorInfo;
 /**
  * @author janm
  */
-public class SpringWebInterceptor extends AbstractMethodInterceptor {
+class SpringWebInterceptor extends AbstractMethodInterceptor {
 	private final SpringWebTestContextManager manager;
 
 	private Throwable exception;

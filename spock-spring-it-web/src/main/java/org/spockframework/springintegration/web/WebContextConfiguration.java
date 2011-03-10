@@ -15,7 +15,7 @@ public @interface WebContextConfiguration {
 
 	String webXml() default "/WEB-INF/web.xml";
 
-	String servletContextConfiguration() default "";
+	String value() default "";
 
 	ContextConfiguration contextConfiguration();
 

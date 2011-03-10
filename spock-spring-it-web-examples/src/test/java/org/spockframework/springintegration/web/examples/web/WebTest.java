@@ -17,12 +17,12 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @author janm
  */
-@WebContextConfiguration(
-	servletContextConfiguration = "/WEB-INF/sw-servlet.xml",
-	contextConfiguration = @ContextConfiguration("classpath*:/META-INF/spring/module-context.xml")
-)
 @Transactional
 @TransactionConfiguration(defaultRollback = true)
+@WebContextConfiguration(
+	value = "/WEB-INF/sw-servlet.xml",
+	contextConfiguration = @ContextConfiguration("classpath*:/META-INF/spring/module-context.xml")
+)
 @Jndi(
 		dataSources = @DataSource(name = "java:comp/env/jdbc/test",
 				driverClass = JDBCDriver.class, url = "jdbc:hsqldb:mem:test"),

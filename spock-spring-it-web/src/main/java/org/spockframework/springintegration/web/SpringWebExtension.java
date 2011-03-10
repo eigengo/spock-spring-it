@@ -32,7 +32,7 @@ public class SpringWebExtension implements IGlobalExtension {
 			MockServletConfig servletConfig = new MockServletConfig(servletContext);
 			servletContext.addInitParameter("contextConfigLocation",
 					StringUtils.arrayToDelimitedString(webContextConfiguration.contextConfiguration().value(), "\n"));
-			String servletContextConfiguration = webContextConfiguration.servletContextConfiguration();
+			String servletContextConfiguration = webContextConfiguration.value();
 			if (servletContextConfiguration.isEmpty()) {
 				throw new WebTestContextCreationException("You must specify servletContextConfiguration at this moment.");
 			}

@@ -47,7 +47,7 @@ class WebSpecification extends Specification {
 					dispatcherServlet.service((ServletRequest) request, (ServletResponse) response)
 				}
 
-			});
+			}, "Web Thread");
 			requestThread.start()
 			requestThread.join()
 

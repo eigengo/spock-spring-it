@@ -12,7 +12,7 @@ class UserControllerTest extends WebSpecification {
 	@Autowired
 	HibernateTemplate hibernateTemplate
 
-	def "posting a user with all fields"() {
+	def "create, view and edit"() {
 		given:
 		def username = "__janm"
 

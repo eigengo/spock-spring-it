@@ -1,6 +1,5 @@
 package org.spockframework.springintegration.web
 
-import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
@@ -12,7 +11,7 @@ import spock.lang.Specification
 class WebSpecification extends Specification {
 
 	public WebObject get(String url, Object... params) {
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", String.format(url, params))
+		JspCapableMockHttpServletRequest request = new JspCapableMockHttpServletRequest("GET", String.format(url, params))
 		MockHttpServletResponse response = new MockHttpServletResponse()
 		try {
 			DispatcherServletHolder.get().service(request, response)
@@ -24,7 +23,7 @@ class WebSpecification extends Specification {
 	}
 
 	public WebObject post(String url, params) {
-		MockHttpServletRequest request = new MockHttpServletRequest("POST", url)
+		JspCapableMockHttpServletRequest request = new JspCapableMockHttpServletRequest("POST", String.format(url, params))
 		params.each { k, v -> request.setParameter(k, v) }
 		MockHttpServletResponse response = new MockHttpServletResponse()
 		try {

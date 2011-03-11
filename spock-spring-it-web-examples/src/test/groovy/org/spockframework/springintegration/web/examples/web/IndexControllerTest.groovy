@@ -20,6 +20,8 @@ class IndexControllerTest extends WebSpecification {
 
 		then:
 		wo.modelAttribute("message") == param
+		wo.html().contains param
+		System.out.println(wo.html());
 		this.managementService.get(Message, 1L).sourceText == param
 	}
 

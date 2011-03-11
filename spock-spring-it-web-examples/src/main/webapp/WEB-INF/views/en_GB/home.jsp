@@ -2,6 +2,7 @@
 <html>
 <head></head>
 <body>
+<jsp:include page="menu.jsp"/>
 ${message}
 </body>
 </html>

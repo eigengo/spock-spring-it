@@ -116,7 +116,7 @@ class SomeOtherServiceTest extends Specification {
 <code><pre>
 @Jndi(
 	dataSources = @DataSource(name = "java:comp/env/jdbc/test",
-		driverClassName = "org.hsqldb.jdbcDriver",
+		driverClass = JDBCDriver.class,
 		url = "jdbc:hsqldb:mem:test"),
 	mailSessions = @MailSession(name = "java:comp/env/mail/foo"),
 	transactionManager =

@@ -113,7 +113,7 @@ The interesting part is the @IntegrationTest annotation. It is defined as
 
 @Jndi(
 		dataSources = @DataSource(name = "java:comp/env/jdbc/test",
-				driverClassName = "org.hsqldb.jdbcDriver", url = "jdbc:hsqldb:mem:test"),
+				driverClass = JDBCDriver.class, url = "jdbc:hsqldb:mem:test"),
 		mailSessions = @MailSession(name = "java:comp/env/mail/foo"),
 		transactionManager = @TransactionManager(name = "java:comp/TransactionManager"),
 		beans = @Bean(name = "java:comp/env/bean/hibernateProperties", type = HibernateProperties.class)

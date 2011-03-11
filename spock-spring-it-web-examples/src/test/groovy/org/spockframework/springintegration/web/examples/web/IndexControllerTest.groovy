@@ -19,9 +19,8 @@ class IndexControllerTest extends WebSpecification {
 		def wo = get("/home/%s", param)
 
 		then:
-		wo.modelAttribute("message") == param
-		wo.html().contains param
-		System.out.println(wo.html());
+		wo.getModelAttribute("message") == param
+		wo.html.contains param
 		this.managementService.get(Message, 1L).sourceText == param
 	}
 

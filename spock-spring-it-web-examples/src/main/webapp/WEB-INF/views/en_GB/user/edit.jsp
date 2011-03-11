@@ -15,10 +15,7 @@
 			<sf:label path="username">Username</sf:label> <sf:input path="username"/><sf:errors path="username"/>
 		</div>
 		<div class="ui-widget">
-			<sf:label path="firstName">First Name</sf:label> <sf:input path="firstName"/><sf:errors path="firstName"/>
-		</div>
-		<div class="ui-widget">
-			<sf:label path="lastName">Last Name</sf:label> <sf:input path="lastName"/><sf:errors path="lastName"/>
+			<sf:label path="fullName">First Name</sf:label> <sf:input path="fullName"/><sf:errors path="fullName"/>
 		</div>
 
 		<input type="submit"/>

@@ -15,20 +15,22 @@ class UserControllerTest extends WebSpecification {
 	def "posting a user with all fields"() {
 		given:
 		def username = "__janm"
-		def fullName = "Jan Machacek"
 
 		when:
-		post("/users.html", [username:username, fullName:fullName])
+		post("/users.html", [username:username, fullName:"Jan Machacek"])
+		def wo = get("/users/1.html")
+		wo.setValue("#fullName", "Jan")
+		post(wo)
 
 		then:
 		def user = this.hibernateTemplate.find("from User where username=?", username)[0]
-		user.fullName == fullName
+		user.fullName == "Jan"
 	}
 
 	def "posting with validation"() {
 		given:
 		def username = "janm"
-		def fullName = "Jan Machace"
+		def fullName = "Jan Machacek"
 
 		when:
 		// send invalid form

@@ -1,0 +1,210 @@
+<html>
+<head>
+	<title>Spock and Spring</title>
+</head>
+<body>
+<h1>Spock Extension to simplify integration testing with Spring</h1>
+<p>The motivation for the post and the project is that most of my Spring test code was becoming too complex and--as a result--the test coverage was suffering. I was growing tired of explicit mocking and clumsy Java syntax. There had to be something better: Spock. But Spock was missing the full Spring integration I was looking for. No longer! My code at <a href="https://github.com/janm399/spock-spring-it">https://github.com/janm399/spock-spring-it</a> fixes it and this post describes my motivation and the solution.</p>
+<p>Most Spring enterprise applications use some <code>DataSource</code>s, <code>TransactionManager</code>s and other JEE beasts. Now, we would
+like to use Spock to perform the necessary integration testing, but we don't really want to create separate application context files for the tests.</p>
+<p>Instead, we would like to set up the JNDI environment for the test code and use the same application context files for both testing and production. This is where this project helps: the annotations on our test classes specify the JNDI environment we wish to build for the test.</p>
+<p>Verba docent, exempla trahunt, so I'll start you off with a sample. Let there be:</p>
+<code><pre>
+public interface FooService {
+	int x(String query);
+}
+
+@Service
+@Transactional
+public class DefaultFooService implements FooService {
+	private HibernateTemplate hibernateTemplate;
+
+	@Autowired
+	public DefaultFooService(HibernateTemplate hibernateTemplate) {
+		this.hibernateTemplate = hibernateTemplate;
+	}
+
+	public int x(String query) {
+		Document d = new Document();
+		d.setTitle("x");
+
+		this.hibernateTemplate.saveOrUpdate(d);
+
+		return query.length();
+	}
+}
+</pre></code>
+<p>To get this running, we give the META-INF/spring/module-context.xml configuration file:</p>
+<code><pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="..."
+	   xsi:schemaLocation="..."&gt;
+
+	&lt;context:component-scan base-package="org.spockframework.springintegration"/&gt;
+
+	&lt;jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/test"
+		expected-type="javax.sql.DataSource"/&gt;
+	&lt;jee:jndi-lookup id="hibernateProperties"
+		jndi-name="java:comp/env/bean/hibernateProperties"
+		expected-type="...HibernateProperties"/&gt;
+	&lt;tx:jta-transaction-manager /&gt;
+	&lt;tx:annotation-driven /&gt;
+
+	&lt;bean id="sessionFactory"
+		class="org...hibernate3.AnnotationSessionFactoryBean"&gt;
+		&lt;property name="dataSource" ref="dataSource"/&gt;
+		&lt;property name="packagesToScan"&gt;
+			&lt;list&gt;
+				&lt;value&gt;org...example.domain&lt;/value&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+		&lt;property name="hibernateProperties"
+			value="#{hibernateProperties.asProperties()}"/&gt;
+	&lt;/bean&gt;
+
+	&lt;bean id="hibernateTemplate" class="org...hibernate3.HibernateTemplate"&gt;
+		&lt;property name="sessionFactory" ref="sessionFactory"/&gt;
+	&lt;/bean&gt;
+
+&lt;/beans&gt;
+</pre></code>
+<p>This context file is the same for both tests and for production. The "variable" items (<code>DataSource</code>, <code>TransactionManager</code>
+and our custom <code>HibernateProperties</code>) beans are looked up from JNDI.</p>
+<p>To the test, then. We have simply</p>
+<code><pre>
+@IntegrationTest
+@ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
+class FooServiceTest extends Specification {
+	@Autowired
+	FooService service
+
+	def y() {
+		expect:
+		result == this.service.x(param)
+
+		where:
+		param	| 	result
+		"one"	|	3
+		"two"	|	3
+		"four"	|	4
+	}
+
+}
+</pre></code>
+<p>If I wanted to have another integration test (perhaps testing another class), I would write:</p>
+<code><pre>
+@IntegrationTest
+@ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
+class SomeOtherServiceTest extends Specification {
+	@Autowired
+	SomeOtherService service
+
+	def "testing service operation"() {
+		expect:
+		count = this.service.work(filter)
+
+		where:
+		filter	| 	count
+		"Jan"	|	2
+		"Ani"	|	1
+		"Joe"	|	0
+	}
+
+}
+</pre></code>
+<p>The interesting part is the <code>@IntegrationTest</code> annotation. It is defined as</p>
+<code><pre>
+@Jndi(
+	dataSources = @DataSource(name = "java:comp/env/jdbc/test",
+		driverClassName = "org.hsqldb.jdbcDriver",
+		url = "jdbc:hsqldb:mem:test"),
+	mailSessions = @MailSession(name = "java:comp/env/mail/foo"),
+	transactionManager =
+		@TransactionManager(name = "java:comp/TransactionManager"),
+	beans =
+		@Bean(name = "java:comp/env/bean/hibernateProperties",
+			type = HibernateProperties.class)
+)
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface IntegrationTest {
+}
+</pre></code>
+<p>The reason why I have defined the <code>@IntegrationTest</code> annotation is because I want to use it on the two test classes:
+the FooServiceTest and SomeOtherServiceTest. Naturally, I could have used the <code>@Jndi</code> annotation on the test classes,
+but that would bring [too much] duplication.</p>
+<p>The Spock extension understands the <code>@Jndi</code> annotation and its elements; it prepares the environment for the test
+and then executes the test in the usual Spock way.</p>
+<p>In addition to the "webless" tests, I have now included Spring MVC web testing. This allows us to write simple
+tests for our controllers; the test environment is as close to the real servlet container environment as possible. The
+web testing extension builds on the JNDI support and adds the <code>@WebContextConfiguration</code> annotation. Here is a simple
+test code:</p>
+<code><pre>
+@Controller
+public class IndexController {
+	private ManagementService managementService;
+
+	@Autowired
+	public IndexController(ManagementService managementService) {
+		this.managementService = managementService;
+	}
+
+	@RequestMapping(value = "/home/{name}", method = RequestMethod.GET)
+	public String home(@PathVariable String name, Model model) {
+		model.addAttribute("message", name);
+		Message message = new Message();
+		message.setSourceText(name);
+		message.setProcessedText(name.toUpperCase());
+		this.managementService.save(message);
+		return "home";
+	}
+
+}
+
+@WebTest
+class IndexControllerTest extends WebSpecification {
+	@Autowired
+	def ManagementService managementService;
+
+	def home() {
+		when:
+		def param = "hello"
+		def wo = get("/home/%s", param)
+
+		then:
+		wo.modelAttribute("message") == param
+		wo.html().contains param
+		this.managementService.get(Message, 1L).sourceText == param
+	}
+
+}
+</pre></code>
+<p>The code is quite simple: we make a HTTP GET request to <code>/hello/hello</code> (which will execute the <code>hello</code> method of the
+<code>IndexController</code>). We assert that the model contains the expected attribute, that the generated HTML contains the model
+attribute and that the message has been persisted. To complete the picture, here's the <code>@WebTest</code> annotation:</p>
+<code><pre>
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+@WebContextConfiguration(
+	value = "/WEB-INF/sw-servlet.xml",
+	contextConfiguration =
+		@ContextConfiguration("classpath*:/META-INF/spring/module-context.xml")
+)
+@Jndi(
+	dataSources = @DataSource(name = "java:comp/env/jdbc/test",
+			driverClass = JDBCDriver.class, url = "jdbc:hsqldb:mem:test"),
+	beans = @Bean(name = "java:comp/env/bean/hibernateProperties",
+		type = HibernateProperties.class)
+)
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface WebTest {
+}
+</pre></code>
+<p>Again, the intention of the <code>@WebTest</code> annotation is to allow me to re-use it on all web tests. Looking at its source,
+the most important annotation is the <code>@WebContextConfiguration</code>. It sets the name of the file from which we want to
+build the <code>WebApplicationContext</code> and sets the <code>contextConfiguration</code>: the location of the configuration files from
+which we will build the "server-side" part of our web application.</p>
+</body>
+</html>

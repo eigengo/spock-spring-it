@@ -130,3 +130,72 @@ but that would bring [too much] duplication.
 
 The Spock extension understands the @Jndi annotation and its elements; it prepares the environment for the test
 and then executes the test in the usual Spock way.
+
+In addition to the "webless" tests, I have now included Spring MVC web testing. This allows us to write simple
+tests for our controllers; the test environment is as close to the real servlet container environment as possible. The
+web testing extension builds on the JNDI support and adds the @WebContextConfiguration annotation. Here is a simple
+test code:
+
+@Controller
+public class IndexController {
+	private ManagementService managementService;
+
+	@Autowired
+	public IndexController(ManagementService managementService) {
+		this.managementService = managementService;
+	}
+
+	@RequestMapping(value = "/home/{name}", method = RequestMethod.GET)
+	public String home(@PathVariable String name, Model model) {
+		model.addAttribute("message", name);
+		Message message = new Message();
+		message.setSourceText(name);
+		message.setProcessedText(name.toUpperCase());
+		this.managementService.save(message);
+		return "home";
+	}
+
+}
+
+@WebTest
+class IndexControllerTest extends WebSpecification {
+	@Autowired
+	def ManagementService managementService;
+
+	def home() {
+		when:
+		def param = "hello"
+		def wo = get("/home/%s", param)
+
+		then:
+		wo.modelAttribute("message") == param
+		wo.html().contains param
+		this.managementService.get(Message, 1L).sourceText == param
+	}
+
+}
+
+The code is quite simple: we make a HTTP GET request to /hello/hello (which will execute the hello method of the
+IndexController). We assert that the model contains the expected attribute, that the generated HTML contains the model
+attribute and that the message has been persisted. To complete the picture, here's the @WebTest annotation:
+
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+@WebContextConfiguration(
+	value = "/WEB-INF/sw-servlet.xml",
+	contextConfiguration = @ContextConfiguration("classpath*:/META-INF/spring/module-context.xml")
+)
+@Jndi(
+		dataSources = @DataSource(name = "java:comp/env/jdbc/test",
+				driverClass = JDBCDriver.class, url = "jdbc:hsqldb:mem:test"),
+		beans = @Bean(name = "java:comp/env/bean/hibernateProperties", type = HibernateProperties.class)
+)
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface WebTest {
+}
+
+Again, the intention of the @WebTest annotation is to allow me to re-use it on all web tests. Looking at its source,
+the most important annotation is the @WebContextConfiguration. It sets the name of the file from which we want to
+build the WebApplicationContext and sets the contextConfiguration: the location of the configuration files from
+which we will build the "server-side" part of our web application.

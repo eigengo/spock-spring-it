@@ -10,7 +10,7 @@
 	<groupId>org.spockframework</groupId>
 	<artifactId>spock-spring-it-web-examples</artifactId>
 	<version>0.5-groovy-1.7</version>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 	<name>Spock Framework - Spring Web Integration Test Support Example</name>
 
 	<properties>

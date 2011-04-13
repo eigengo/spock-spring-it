@@ -18,6 +18,8 @@ class TracingDispatcherServlet extends DispatcherServlet {
 	@Override
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
 		final HandlerExecutionChain handler = super.getHandler(request);
+		if (handler == null) return null;
+		
 		boolean interceptorFound = false;
 		for (HandlerInterceptor interceptor : handler.getInterceptors()) {
 			if (interceptor == this.interceptor) {

@@ -28,7 +28,11 @@ public class WebObject {
 
 	public WebObject(HttpServletRequest request, HttpServletResponse response,
 					 byte[] content, ModelAndView modelAndView) {
-		this.model = modelAndView.getModel();
+		if (modelAndView != null) {
+			this.model = modelAndView.getModel();
+		} else {
+			this.model = null;
+		}
 		this.content = content;
 		parse();
 	}

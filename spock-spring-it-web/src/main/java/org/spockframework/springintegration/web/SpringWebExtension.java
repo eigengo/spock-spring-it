@@ -29,17 +29,25 @@ public class SpringWebExtension implements IGlobalExtension {
 			throw new WebTestContextCreationException("Do not annotate your web test cases with @ContextConfiguration. Extend WebSpecification instead.");
 		}
 
+		final String[] webContextConfigurationResources = webContextConfiguration.value();
+		String[] filesToFind = new String[webContextConfigurationResources.length + 1];
+		for (int i = 0; i < webContextConfigurationResources.length; i++) {
+			filesToFind[i + 1] = webContextConfigurationResources[i];
+		}
+		filesToFind[0] = "/WEB-INF/web.xml";
 		final File root = new File(".");
-		File webXml = findWebSource(root, "src", "main", "webapp", "WEB-INF", "web.xml");
-		File webinf = webXml.getParentFile();
-		File webapp = webinf.getParentFile();
+		File webapp = findWebSource(root,
+				new String[] {"src", "main", "webapp"},
+				filesToFind);
+		File webinf = new File(webapp, "WEB-INF");// webXml.getParentFile();
+		//File webapp = webinf.getParentFile();
 
 		try {
 			MockServletContext servletContext = new MockServletContext(webapp.getAbsolutePath(), new AbsoluteFilesystemResourceLoader());
 			MockServletConfig servletConfig = new MockServletConfig(servletContext);
 			servletContext.addInitParameter("contextConfigLocation",
 					StringUtils.arrayToDelimitedString(webContextConfiguration.contextConfiguration().value(), "\n"));
-			String[] servletContextConfiguration = webContextConfiguration.value();
+			String[] servletContextConfiguration = webContextConfigurationResources;
 			if (servletContextConfiguration.length == 0) {
 				throw new WebTestContextCreationException("You must specify servletContextConfiguration at this moment.");
 			}
@@ -72,13 +80,23 @@ public class SpringWebExtension implements IGlobalExtension {
 		topSpec.getCleanupSpecMethod().addInterceptor(interceptor);
 	}
 
-	private File findWebSource(File root, String... path) {
-		File webXml = findFile(root, path);
-		if (webXml != null) return webXml;
+	private File findWebSource(File root, String[] path, String[] filesToFind) {
+		File webInf = findFile(root, path);
+		if (webInf != null) return webInf;
 		for (File directory : root.listFiles()) {
 			if (!directory.isDirectory()) continue;
-			webXml = findWebSource(directory, path);
-			if (webXml != null) return webXml;
+			webInf = findWebSource(directory, path, filesToFind);
+			if (webInf != null) {
+				boolean foundAllFiles = true;
+				for (int i = 0; i < filesToFind.length; i++) {
+					if (!(new File(webInf, filesToFind[i])).exists()) {
+						foundAllFiles = false;
+						break;
+					}
+				}
+
+				if (foundAllFiles) return webInf;
+			}
 		}
 		return null;
 	}

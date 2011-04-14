@@ -1,5 +1,7 @@
 package org.spockframework.springintegration.web;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -28,6 +30,13 @@ class TracingDispatcherServlet extends DispatcherServlet {
 		}
 		if (!interceptorFound) handler.addInterceptor(this.interceptor);
 		return handler;
+	}
+
+	@Override
+	protected void onRefresh(ApplicationContext context) {
+		super.onRefresh(context);
+		//test was publishing the underlying web app context instead of the full application context, there may be a better way of doing this.
+		getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, context);
 	}
 
 	private static class ModelAndViewRecordingInterceptor implements HandlerInterceptor {

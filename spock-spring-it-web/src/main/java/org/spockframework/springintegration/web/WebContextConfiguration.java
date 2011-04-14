@@ -19,5 +19,7 @@ public @interface WebContextConfiguration {
 
 	ContextConfiguration contextConfiguration();
 
+	boolean useSpringSecurity() default false;
+
 
 }

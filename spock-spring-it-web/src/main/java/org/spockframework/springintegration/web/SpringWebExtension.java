@@ -39,20 +39,17 @@ public class SpringWebExtension implements IGlobalExtension {
 		File webapp = findWebSource(root,
 				new String[] {"src", "main", "webapp"},
 				filesToFind);
-		File webinf = new File(webapp, "WEB-INF");// webXml.getParentFile();
-		//File webapp = webinf.getParentFile();
 
 		try {
 			MockServletContext servletContext = new MockServletContext(webapp.getAbsolutePath(), new AbsoluteFilesystemResourceLoader());
 			MockServletConfig servletConfig = new MockServletConfig(servletContext);
 			servletContext.addInitParameter("contextConfigLocation",
 					StringUtils.arrayToDelimitedString(webContextConfiguration.contextConfiguration().value(), "\n"));
-			String[] servletContextConfiguration = webContextConfigurationResources;
-			if (servletContextConfiguration.length == 0) {
+			if (webContextConfigurationResources.length == 0) {
 				throw new WebTestContextCreationException("You must specify servletContextConfiguration at this moment.");
 			}
 			servletConfig.addInitParameter("contextConfigLocation",
-					StringUtils.arrayToDelimitedString(servletContextConfiguration, "\n"));
+					StringUtils.arrayToDelimitedString(webContextConfigurationResources, "\n"));
 
 			ContextLoaderListener listener = new ContextLoaderListener();
 			listener.initWebApplicationContext(servletContext);

@@ -156,6 +156,8 @@ public class JndiExtension implements IGlobalExtension {
 				}
 			}
 
+			System.out.println("*** Building from " + Thread.currentThread().getName());
+
 			javax.sql.DataSource ds;
 			if (xa) {
 				AtomikosDataSourceBean realDs = new AtomikosDataSourceBean();
@@ -165,6 +167,7 @@ public class JndiExtension implements IGlobalExtension {
 				p.setProperty("password", dataSource.password());
 				p.setProperty("URL", dataSource.url());
 				realDs.setXaProperties(p);
+				realDs.setUniqueResourceName(dataSource.driverClass().getName() + System.currentTimeMillis());
 				realDs.setPoolSize(5);
 				ds = realDs;
 			} else {
@@ -173,7 +176,7 @@ public class JndiExtension implements IGlobalExtension {
 				realDs.setUrl(dataSource.url());
 				realDs.setUser(dataSource.username());
 				realDs.setPassword(dataSource.password());
-				realDs.setUniqueResourceName(dataSource.driverClass().getName());
+				realDs.setUniqueResourceName(dataSource.driverClass().getName() + System.currentTimeMillis());
 				realDs.setPoolSize(5);
 				ds = realDs;
 			}
@@ -202,7 +205,7 @@ public class JndiExtension implements IGlobalExtension {
 				throws NamingException {
 			if (activated != null) {
 				// Clear already activated context builder.
-				activated.clear();
+				// activated.clear();
 			} else {
 				// Create and activate new context builder.
 				NamingContextBuilder builder = new NamingContextBuilder();
@@ -251,6 +254,7 @@ public class JndiExtension implements IGlobalExtension {
 		 * @param obj  the object to bind (e.g. a DataSource implementation)
 		 */
 		public void bind(String name, Object obj) {
+			if (this.boundObjects.contains(name)) return;
 			this.boundObjects.put(name, obj);
 		}
 
@@ -294,6 +298,10 @@ public class JndiExtension implements IGlobalExtension {
 					return new SimpleNamingContext("", NamingContextBuilder.this.boundObjects, environment);
 				}
 			};
+		}
+
+		boolean contains(String name) {
+			return this.boundObjects.contains(name);
 		}
 	}
 

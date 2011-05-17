@@ -19,12 +19,4 @@ public @interface TransactionManager {
 	 */
 	String name();
 
-	/**
-	 * Specified that the transaction manager should be a two-phase commit manager. Typically, you would
-	 * leave this value as {@code false}.
-	 *
-	 * @return {@code true} if the TransactionManager should be an XA one
-	 */
-	boolean xa() default false;
-
 }

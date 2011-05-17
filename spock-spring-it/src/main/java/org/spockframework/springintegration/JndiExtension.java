@@ -1,14 +1,16 @@
 package org.spockframework.springintegration;
 
 import com.atomikos.icatch.jta.UserTransactionManager;
+import com.atomikos.jdbc.AtomikosDataSourceBean;
+import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTopic;
 import org.spockframework.runtime.extension.IGlobalExtension;
 import org.spockframework.runtime.model.SpecInfo;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.mock.jndi.SimpleNamingContext;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 import javax.mail.Session;
@@ -17,6 +19,7 @@ import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.spi.InitialContextFactoryBuilder;
 import javax.naming.spi.NamingManager;
+import javax.sql.XADataSource;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -29,17 +32,17 @@ import java.util.Properties;
  * values in the annotation. You can use the extension on its own, though typically, you'd combine it with the
  * spock-spring extension. This will allow you to write Spock code that looks like this:
  * <code><pre>
- *	&#64;Jndi(
- *		dataSources = &#64;DataSource(...)
- *	)
- *	&#64;ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
- *	class FooServiceTest extends Specification {
- *		&#64;Autowired
- *	 	FooService service
- *
- *	 	def "some test"() {
- *	 	}
- *	 }
+ * 	&#64;Jndi(
+ * 		dataSources = &#64;DataSource(...)
+ * 	)
+ * 	&#64;ContextConfiguration(locations = "classpath*:/META-INF/spring/module-context.xml")
+ * 	class FooServiceTest extends Specification {
+ * 		&#64;Autowired
+ * 	 	FooService service
+ * <p/>
+ * 	 	def "some test"() {
+ *		  }
+ *	  }
  * </pre></code>
  *
  * @author janm
@@ -87,11 +90,7 @@ public class JndiExtension implements IGlobalExtension {
 		if (transactionManagers.length == 0) return;
 		if (transactionManagers.length > 1) throw new EnvironmentCreationException("Cannot have more than one TransactionManager");
 		TransactionManager transactionManager = transactionManagers[0];
-		if (transactionManager.xa()) {
-			throw new EnvironmentCreationException("XA TransactionManagers not implemented yet.");
-		} else {
-			builder.bind(transactionManager.name(), new UserTransactionManager());
-		}
+		builder.bind(transactionManager.name(), new UserTransactionManager());
 	}
 
 	private void buildCustom(NamingContextBuilder builder, Class<? extends JndiBuilder> builderClass) {
@@ -148,12 +147,34 @@ public class JndiExtension implements IGlobalExtension {
 
 	private void buildDataSources(NamingContextBuilder builder, DataSource[] dataSources) {
 		for (DataSource dataSource : dataSources) {
-			DriverManagerDataSource ds = new DriverManagerDataSource();
-			ds.setDriverClassName(dataSource.driverClass().getName());
-			ds.setUrl(dataSource.url());
-			ds.setUsername(dataSource.username());
-			ds.setPassword(dataSource.password());
-			
+			boolean xa = false;
+			for (Class<?> intf : ClassUtils.getAllInterfacesForClass(dataSource.driverClass())) {
+				if (intf == XADataSource.class) {
+					xa = true;
+					break;
+				}
+			}
+
+			javax.sql.DataSource ds;
+			if (xa) {
+				AtomikosDataSourceBean realDs = new AtomikosDataSourceBean();
+				realDs.setXaDataSourceClassName(dataSource.driverClass().getName());
+				Properties p = new Properties();
+				p.setProperty("user", dataSource.username());
+				p.setProperty("password", dataSource.password());
+				p.setProperty("URL", dataSource.url());
+				realDs.setXaProperties(p);
+				realDs.setPoolSize(1);
+				ds = realDs;
+			} else {
+				AtomikosNonXADataSourceBean realDs = new AtomikosNonXADataSourceBean();
+				realDs.setDriverClassName(dataSource.driverClass().getName());
+				realDs.setUrl(dataSource.url());
+				realDs.setUser(dataSource.username());
+				realDs.setPassword(dataSource.password());
+				ds = realDs;
+			}
+
 			builder.bind(dataSource.name(), ds);
 		}
 	}
@@ -196,7 +217,7 @@ public class JndiExtension implements IGlobalExtension {
 		 * <code>new InitialContext()</code> will always return a context from this factory. Use the <code>emptyActivatedContextBuilder()</code>
 		 * static method to get an empty context (for example, in test methods).
 		 *
-		 * @throws IllegalStateException if there's already a naming context builder registeredwith the JNDI NamingManager
+		 * @throws IllegalStateException		if there's already a naming context builder registeredwith the JNDI NamingManager
 		 * @throws javax.naming.NamingException .
 		 */
 		public void activate() throws IllegalStateException, NamingException {
@@ -216,10 +237,38 @@ public class JndiExtension implements IGlobalExtension {
 		 * Bind the given object under the given name, for all naming contexts that this context builder will generate.
 		 *
 		 * @param name the JNDI name of the object (e.g. "java:comp/env/jdbc/myds")
-		 * @param obj the object to bind (e.g. a DataSource implementation)
+		 * @param obj  the object to bind (e.g. a DataSource implementation)
 		 */
 		public void bind(String name, Object obj) {
 			this.boundObjects.put(name, obj);
+		}
+
+		/**
+		 * Indicates whether we have at least one XA data source
+		 *
+		 * @return {@code true} if we have XA objects bound
+		 */
+		boolean isXa() {
+			for (Map.Entry<String, Object> e : this.boundObjects.entrySet()) {
+				if (e.getValue() instanceof XADataSource) return true;
+			}
+
+			return false;
+		}
+
+		<T> T getSingleObject(Class<T> clazz) {
+			int count = 0;
+			T object = null;
+			for (Map.Entry<String, Object> e : this.boundObjects.entrySet()) {
+				if (clazz.isAssignableFrom(e.getValue().getClass())) {
+					if (count > 0) throw new RuntimeException("More than one object of type " + clazz + " found.");
+					object = (T) e.getValue();
+					count++;
+				}
+			}
+			if (object == null) throw new RuntimeException("No object of type " + clazz + " found.");
+
+			return object;
 		}
 
 		/**

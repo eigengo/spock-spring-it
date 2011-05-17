@@ -156,8 +156,6 @@ public class JndiExtension implements IGlobalExtension {
 				}
 			}
 
-			System.out.println("*** Building from " + Thread.currentThread().getName());
-
 			javax.sql.DataSource ds;
 			if (xa) {
 				AtomikosDataSourceBean realDs = new AtomikosDataSourceBean();

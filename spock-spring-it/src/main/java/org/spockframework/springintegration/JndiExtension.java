@@ -39,10 +39,9 @@ import java.util.Properties;
  * 	class FooServiceTest extends Specification {
  * 		&#64;Autowired
  * 	 	FooService service
- * <p/>
  * 	 	def "some test"() {
- *		  }
- *	  }
+ *		}
+ *	}
  * </pre></code>
  *
  * @author janm
@@ -88,7 +87,8 @@ public class JndiExtension implements IGlobalExtension {
 
 	private void buildTransactionManagers(NamingContextBuilder builder, TransactionManager[] transactionManagers) {
 		if (transactionManagers.length == 0) return;
-		if (transactionManagers.length > 1) throw new EnvironmentCreationException("Cannot have more than one TransactionManager");
+		if (transactionManagers.length > 1)
+			throw new EnvironmentCreationException("Cannot have more than one TransactionManager");
 		TransactionManager transactionManager = transactionManagers[0];
 		builder.bind(transactionManager.name(), new UserTransactionManager());
 	}

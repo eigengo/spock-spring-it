@@ -1,6 +1,7 @@
 package org.spockframework.springintegration;
 
 import com.atomikos.icatch.jta.UserTransactionManager;
+import com.atomikos.jdbc.AbstractDataSourceBean;
 import com.atomikos.jdbc.AtomikosDataSourceBean;
 import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -164,7 +165,7 @@ public class JndiExtension implements IGlobalExtension {
 				p.setProperty("password", dataSource.password());
 				p.setProperty("URL", dataSource.url());
 				realDs.setXaProperties(p);
-				realDs.setPoolSize(1);
+				realDs.setPoolSize(5);
 				ds = realDs;
 			} else {
 				AtomikosNonXADataSourceBean realDs = new AtomikosNonXADataSourceBean();
@@ -173,6 +174,7 @@ public class JndiExtension implements IGlobalExtension {
 				realDs.setUser(dataSource.username());
 				realDs.setPassword(dataSource.password());
 				realDs.setUniqueResourceName(dataSource.driverClass().getName());
+				realDs.setPoolSize(5);
 				ds = realDs;
 			}
 
@@ -231,6 +233,14 @@ public class JndiExtension implements IGlobalExtension {
 		 * Clear all bindings in this context builder.
 		 */
 		public void clear() {
+			for (Map.Entry<String, Object> e : this.boundObjects.entrySet()) {
+				if (e.getValue() instanceof AbstractDataSourceBean) {
+					((AbstractDataSourceBean)e.getValue()).close();
+				}
+				if (e.getValue() instanceof UserTransactionManager) {
+					((UserTransactionManager)e.getValue()).close();
+				}
+			}
 			this.boundObjects.clear();
 		}
 

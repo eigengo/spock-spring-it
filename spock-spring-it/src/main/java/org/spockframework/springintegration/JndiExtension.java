@@ -172,6 +172,7 @@ public class JndiExtension implements IGlobalExtension {
 				realDs.setUrl(dataSource.url());
 				realDs.setUser(dataSource.username());
 				realDs.setPassword(dataSource.password());
+				realDs.setUniqueResourceName(dataSource.driverClass().getName());
 				ds = realDs;
 			}
 
